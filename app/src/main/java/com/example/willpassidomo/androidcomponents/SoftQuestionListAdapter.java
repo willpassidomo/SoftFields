@@ -6,9 +6,14 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ListAdapter;
+import android.widget.SimpleAdapter;
 import android.widget.Spinner;
+import android.widget.SpinnerAdapter;
+import android.widget.TextView;
 import android.widget.ViewSwitcher;
 
 import java.util.ArrayList;
@@ -89,7 +94,7 @@ public class SoftQuestionListAdapter implements ListAdapter {
         if (controlBlock) {
             return controlBlockView(view);
         } else {
-            return listItemView(view);
+            return listItemView(view, position);
         }
 
     }
@@ -105,6 +110,9 @@ public class SoftQuestionListAdapter implements ListAdapter {
                 vs.showNext();
             }
         });
+       //Need to be the string values of the FieldValue
+        ArrayAdapter<FieldValue> sa = new ArrayAdapter<>(context, android.R.layout.simple_spinner_dropdown_item, out);
+        newQuestion.setAdapter(sa);
         newQuestion.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -117,20 +125,37 @@ public class SoftQuestionListAdapter implements ListAdapter {
         return view;
     }
 
-    private View listItemView(View view) {
-        //TODO
+    private View listItemView(View view, int position) {
+        FieldValue fv = in.get(position);
+
+        TextView field = view.findViewById(R.id.soft_q_field);
+        EditText value = view.findViewById(R.id.soft_q_value);
+
+        field.setText(fv.getField());
+        value.setText(fv.getValue());
+
+        return view;
     }
 
     private void newFieldValueSelected(int position, FieldValue newQuestion) {
         FieldValue newQ = out.get(position);
+        //a, probably redundent, check to make sure we are removing the correct item
         if (newQ.equals(newQuestion)) {
             out.remove(position);
-            in.add(in.size(). newQuestion);
+            in.add(in.size(), newQuestion);
         } else {
-
+            out.remove(newQuestion);
+            in.add(in.size(), newQuestion);
+            }
         }
     }
 
+    private int getIndex (ArrayList<FieldValue> li, FieldValue v) {
+        for (int i = 0; i < li.size(); i++) {
+            if (li.get(i).equals(v)) {
+                return i;
+            }
+        }
 
     @Override
     public int getItemViewType(int position) {
