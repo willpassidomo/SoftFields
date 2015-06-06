@@ -11,6 +11,16 @@ public class FieldValue implements Comparable {
     //selected
     private String value;
 
+    public FieldValue(String field, String value) {
+        this.field = field;
+        this.value = value;
+    }
+
+    public FieldValue(String field) {
+        this.field = field;
+        this.value = "";
+    }
+
     public void setField(String field) {
         this.field = field;
     }

@@ -81,28 +81,24 @@ public class SoftQuestionListAdapter implements ListAdapter {
     public View getView(int position, View view, ViewGroup parent) {
         boolean controlBlock = (position >= in.size());
 
-        if (view == null) {
+        if (true){///iew == null) {
             LayoutInflater infalInflater = (LayoutInflater) this.context
                     .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             if (controlBlock) {
                 view = infalInflater.inflate(R.layout.soft_q_control_block, null);
+                return controlBlockView(view);
             } else {
                 view = infalInflater.inflate(R.layout.soft_q_field_val, null);
+                return listItemView(view, position);
             }
         }
-
-        if (controlBlock) {
-            return controlBlockView(view);
-        } else {
-            return listItemView(view, position);
-        }
-
+        return view;
     }
 
     private View controlBlockView(View view) {
-        final ViewSwitcher vs = view.findViewById(R.layout.soft_q_view_switcher);
-        Button addQ = view.findViewById(R.layout.soft_q_add);
-        final Spinner newQuestion = view.findViewById(R.layout.soft_q_selector);
+        final ViewSwitcher vs = (ViewSwitcher)view.findViewById(R.id.soft_q_view_switcher);
+        Button addQ = (Button)view.findViewById(R.id.soft_q_add_q);
+        final Spinner newQuestion = (Spinner)view.findViewById(R.id.soft_q_selector);
 
         addQ.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -113,13 +109,18 @@ public class SoftQuestionListAdapter implements ListAdapter {
        //Need to be the string values of the FieldValue
         ArrayAdapter<FieldValue> sa = new ArrayAdapter<>(context, android.R.layout.simple_spinner_dropdown_item, out);
         newQuestion.setAdapter(sa);
-        newQuestion.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        newQuestion.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 vs.showNext();
-                newFieldValueSelected(newQuestion.getSelectedItemPosition(),(FieldValue) newQuestion.getSelectedItem());
+                newFieldValueSelected(newQuestion.getSelectedItemPosition(), (FieldValue) newQuestion.getSelectedItem());
                 //TODO
                 //refresh/rerender view
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
             }
         });
         return view;
@@ -128,8 +129,8 @@ public class SoftQuestionListAdapter implements ListAdapter {
     private View listItemView(View view, int position) {
         FieldValue fv = in.get(position);
 
-        TextView field = view.findViewById(R.id.soft_q_field);
-        EditText value = view.findViewById(R.id.soft_q_value);
+        TextView field = (TextView)view.findViewById(R.id.soft_q_field);
+        EditText value = (EditText)view.findViewById(R.id.soft_q_value);
 
         field.setText(fv.getField());
         value.setText(fv.getValue());
@@ -147,7 +148,6 @@ public class SoftQuestionListAdapter implements ListAdapter {
             out.remove(newQuestion);
             in.add(in.size(), newQuestion);
             }
-        }
     }
 
     private int getIndex (ArrayList<FieldValue> li, FieldValue v) {
@@ -156,15 +156,24 @@ public class SoftQuestionListAdapter implements ListAdapter {
                 return i;
             }
         }
+        return -1;
+    }
 
-    @Override
-    public int getItemViewType(int position) {
-        return 0;
+    public ArrayList<FieldValue>[] getFieldValues() {
+        ArrayList<FieldValue>[] li = new ArrayList[2];
+        li[0] = in;
+        li[1] = out;
+        return li;
     }
 
     @Override
     public int getViewTypeCount() {
-        return 0;
+        return 1;
+    }
+
+    @Override
+    public int getItemViewType(int position) {
+        return 1;
     }
 
     @Override
