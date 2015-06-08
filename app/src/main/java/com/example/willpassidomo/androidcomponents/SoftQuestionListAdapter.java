@@ -110,12 +110,17 @@ public class SoftQuestionListAdapter implements ListAdapter {
         ArrayAdapter<FieldValue> sa = new ArrayAdapter<>(context, android.R.layout.simple_spinner_dropdown_item, out);
         newQuestion.setAdapter(sa);
         newQuestion.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            boolean click = false;
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                vs.showNext();
-                newFieldValueSelected(newQuestion.getSelectedItemPosition(), (FieldValue) newQuestion.getSelectedItem());
-                //TODO
-                //refresh/rerender view
+                if (click) {
+                    vs.showNext();
+                    newFieldValueSelected(newQuestion.getSelectedItemPosition(), (FieldValue) newQuestion.getSelectedItem());
+                    //TODO
+                    //refresh/rerender view
+                } else {
+                    click = true;
+                }
             }
 
             @Override
@@ -140,23 +145,8 @@ public class SoftQuestionListAdapter implements ListAdapter {
 
     private void newFieldValueSelected(int position, FieldValue newQuestion) {
         FieldValue newQ = out.get(position);
-        //a, probably redundent, check to make sure we are removing the correct item
-        if (newQ.equals(newQuestion)) {
             out.remove(position);
             in.add(in.size(), newQuestion);
-        } else {
-            out.remove(newQuestion);
-            in.add(in.size(), newQuestion);
-            }
-    }
-
-    private int getIndex (ArrayList<FieldValue> li, FieldValue v) {
-        for (int i = 0; i < li.size(); i++) {
-            if (li.get(i).equals(v)) {
-                return i;
-            }
-        }
-        return -1;
     }
 
     public ArrayList<FieldValue>[] getFieldValues() {
