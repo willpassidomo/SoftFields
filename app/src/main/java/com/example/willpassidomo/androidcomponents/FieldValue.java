@@ -41,11 +41,10 @@ public class FieldValue implements Comparable {
     @Override
     public boolean equals(Object fv) {
         if (fv instanceof FieldValue) {
-            return false;
-        } else {
             FieldValue fvv = (FieldValue)fv;
             return (this.field.equals(fvv.getField()) && value.equals(fvv.getValue()));
         }
+        return false;
     }
 
     @Override
