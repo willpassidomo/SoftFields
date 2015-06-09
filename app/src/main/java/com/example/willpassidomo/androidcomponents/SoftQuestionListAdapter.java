@@ -3,6 +3,7 @@ package com.example.willpassidomo.androidcomponents;
 import android.content.Context;
 import android.database.DataSetObserver;
 import android.text.Editable;
+import android.text.Layout;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -14,6 +15,7 @@ import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListAdapter;
+import android.widget.RelativeLayout;
 import android.widget.SimpleAdapter;
 import android.widget.Spinner;
 import android.widget.SpinnerAdapter;
@@ -165,14 +167,45 @@ public class SoftQuestionListAdapter implements ListAdapter {
         return view;
     }
 
-    private View listItemView(View view, int position) {
+    private View listItemView(final View view, final int position) {
         final FieldValue fv = in.get(position);
 
         TextView field = (TextView)view.findViewById(R.id.soft_q_field);
         EditText value = (EditText)view.findViewById(R.id.soft_q_value);
+        final ViewSwitcher vs = (ViewSwitcher)view.findViewById(R.id.soft_q_switch_remove);
+        final Button remove = (Button)view.findViewById(R.id.soft_q_remove_f);
+        RelativeLayout noRemove = (RelativeLayout)view.findViewById(R.id.soft_q_no_remove_f);
 
         field.setText(fv.getField());
         value.setText(fv.getValue());
+
+        field.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                if (!fv.getRequired()) {
+                    vs.showNext();
+                }
+                return true;
+            }
+        });
+
+        remove.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (!fv.getRequired()) {
+                    removeFieldValue(position);
+                    vs.showNext();
+                    view.invalidate();
+                }
+            }
+        });
+
+        noRemove.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                vs.showNext();
+            }
+        });
 
         value.addTextChangedListener(new TextWatcher() {
             @Override
@@ -182,12 +215,10 @@ public class SoftQuestionListAdapter implements ListAdapter {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                Log.i("onTextChanged", s.toString());
             }
 
             @Override
             public void afterTextChanged(Editable s) {
-                Log.i("afterTextChanged", "s- " + s.toString());
                 fv.setValue(s.toString());
             }
         });
@@ -197,6 +228,10 @@ public class SoftQuestionListAdapter implements ListAdapter {
 
     private void newFieldValueSelected(int position) {
         in.add(out.remove(position));
+    }
+
+    private void removeFieldValue(int position) {
+        out.add(in.remove(position));
     }
 
     public ArrayList<FieldValue>[] getFieldValues() {

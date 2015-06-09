@@ -10,6 +10,18 @@ public class FieldValue implements Comparable {
     //check it properly...make it so the correct keyboard configuration appers when the field is
     //selected
     private String value;
+    private boolean required = false;
+
+    public FieldValue(String field, String value, boolean required) {
+        this.field = field;
+        this.value = value;
+        this.required = required;
+    }
+
+    public FieldValue(String field, boolean required) {
+        this.field = field;
+        this.required = required;
+    }
 
     public FieldValue(String field, String value) {
         this.field = field;
@@ -37,6 +49,13 @@ public class FieldValue implements Comparable {
         return this.value;
     }
 
+    public boolean getRequired() {
+        return this.required;
+    }
+
+    public void setRequired(boolean required) {
+        this.required = required;
+    }
 
     @Override
     public boolean equals(Object fv) {
