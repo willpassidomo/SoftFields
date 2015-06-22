@@ -3,7 +3,6 @@ package com.example.willpassidomo.androidcomponents;
 import android.content.Context;
 import android.database.DataSetObserver;
 import android.text.Editable;
-import android.text.Layout;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -11,18 +10,16 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListAdapter;
 import android.widget.RelativeLayout;
-import android.widget.SimpleAdapter;
 import android.widget.Spinner;
-import android.widget.SpinnerAdapter;
 import android.widget.TextView;
 import android.widget.ViewSwitcher;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by willpassidomo on 6/5/15.
@@ -30,19 +27,32 @@ import java.util.ArrayList;
 public class SoftQuestionListAdapter implements ListAdapter {
 
     private boolean changed = false;
-    private FieldValue fvLead = new FieldValue("select field..");
+    private FieldValue fvLead = new FieldValue("select field..", false);
+    private DataListener dl;
     private Context context;
     private ArrayList<FieldValue> in;
     private ArrayList<FieldValue> out;
-    private TextView sample;
+    private TextView field,value;
 
-    public SoftQuestionListAdapter (Context context, ArrayList<FieldValue> in, ArrayList<FieldValue> out) {
+
+    public SoftQuestionListAdapter(Context context, List<FieldValue> fvs) {
         this.context = context;
-        this.in = in;
-        // out.add(0,fvLead);
-        this.out = out;
+        in = new ArrayList<>();
+        out = new ArrayList<>();
+
+        for (FieldValue fv : fvs) {
+            if (fv.getIn()) {
+                in.add(fv);
+            } else {
+                out.add(fv);
+            }
+        }
     }
 
+    public SoftQuestionListAdapter(Context context, List<FieldValue> fvs, DataListener dl) {
+        this(context, fvs);
+        this.dl = dl;
+    }
 
     @Override
     public boolean areAllItemsEnabled() {
@@ -93,14 +103,39 @@ public class SoftQuestionListAdapter implements ListAdapter {
         boolean controlBlock = (position >= in.size());
         boolean matches = true;
 
-        if (view != null && !controlBlock) {
+        if (view != null && !controlBlock && !changed) {
         /*gets the "field" value of the view passed in */
-            sample = (TextView) view.findViewById(R.id.soft_q_field);
+            field = (TextView) view.findViewById(R.id.soft_q_field);
+            value = (TextView) view.findViewById(R.id.soft_q_value);
         /*is the corresponding field's view from the "in" array equal
          * to the field value of the view */
-            matches = in.get(position).getField().equals(sample.getText());
-        } else {
-            matches = true;
+            FieldValue fv = in.get(position);
+            boolean fieldMatches;
+            boolean valueEmpty;
+            //Does the field of the view equal the field of the FieldValue in the in list?
+            if (field != null) {
+                fieldMatches = fv.getField().equals(field.getText());
+            } else {
+                fieldMatches = false;
+            }
+            //does the value of the view equal the value of the FieldValue in the in list?
+            if (value != null) {
+                valueEmpty = value.getText() == null && fv.getField().equals("");
+            } else {
+                valueEmpty = false;
+            }
+            //if either the field is different or the value are different, there is no match
+            if (!valueEmpty || !fieldMatches) {
+                matches = false;
+            } else {
+                boolean valueMatched;
+                if (fv.getValue() != null) {
+                    valueMatched = fv.getValue().equals(value.getText());
+                } else {
+                    valueMatched = false;
+                }
+                matches = fieldMatches && (valueEmpty | valueMatched);
+            }
         }
         /*resets view if the ^ doesnt match */
         if (view == null || (changed && position == in.size() - 1) || !matches) {
@@ -108,22 +143,25 @@ public class SoftQuestionListAdapter implements ListAdapter {
                     .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             if (controlBlock) {
                 view = infalInflater.inflate(R.layout.soft_q_control_block, null);
+                return controlBlockView(view);
+
             } else {
                 view = infalInflater.inflate(R.layout.soft_q_field_val, null);
-            }
-            if (controlBlock) {
-                return controlBlockView(view);
-            } else {
-                return listItemView(view, position);
+                view = listItemView(view, position);
+                if (position == in.size() - 1) {
+                    changed = false;
+                }
+                return view;
             }
         }
+        Log.i("SoftQuestionListAdapter", "New View");
         return view;
     }
 
     private View controlBlockView(final View view) {
-        final ViewSwitcher vs = (ViewSwitcher)view.findViewById(R.id.soft_q_view_switcher);
-        Button addQ = (Button)view.findViewById(R.id.soft_q_add_q);
-        final Spinner newQuestion = (Spinner)view.findViewById(R.id.soft_q_selector);
+        final ViewSwitcher vs = (ViewSwitcher) view.findViewById(R.id.soft_q_view_switcher);
+        Button addQ = (Button) view.findViewById(R.id.soft_q_add_q);
+        final Spinner newQuestion = (Spinner) view.findViewById(R.id.soft_q_selector);
 
         addQ.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -132,8 +170,11 @@ public class SoftQuestionListAdapter implements ListAdapter {
             }
         });
         ArrayAdapter<FieldValue> sa = new ArrayAdapter<>(context, android.R.layout.simple_spinner_dropdown_item, out);
-        if(!sa.getItem(0).equals(fvLead)) {
-            sa.insert(fvLead, 0);
+        if (out.size() >= 1) {
+            if (!sa.getItem(0).equals(fvLead)) {
+                sa.insert(fvLead, 0);
+            }
+
         }
         newQuestion.setAdapter(sa);
         newQuestion.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -143,12 +184,6 @@ public class SoftQuestionListAdapter implements ListAdapter {
             public void onItemSelected(AdapterView<?> parent, View viewI, int position, long id) {
                 if (click) {
                     newFieldValueSelected(newQuestion.getSelectedItemPosition());
-
-                    ///TODO
-                    //this makes the view update in the emulator
-//                    vs.removeView(vs.getNextView());
-//                    vs.addView(getView(in.size() - 1,null,null),0);
-//                    vs.showNext();
                     //TODO
                     //this does not work in the emulator, but works on a physical device
                     view.invalidate();
@@ -170,11 +205,11 @@ public class SoftQuestionListAdapter implements ListAdapter {
     private View listItemView(final View view, final int position) {
         final FieldValue fv = in.get(position);
 
-        TextView field = (TextView)view.findViewById(R.id.soft_q_field);
-        EditText value = (EditText)view.findViewById(R.id.soft_q_value);
-        final ViewSwitcher vs = (ViewSwitcher)view.findViewById(R.id.soft_q_switch_remove);
-        final Button remove = (Button)view.findViewById(R.id.soft_q_remove_f);
-        RelativeLayout noRemove = (RelativeLayout)view.findViewById(R.id.soft_q_no_remove_f);
+        TextView field = (TextView) view.findViewById(R.id.soft_q_field);
+        EditText value = (EditText) view.findViewById(R.id.soft_q_value);
+        final ViewSwitcher vs = (ViewSwitcher) view.findViewById(R.id.soft_q_switch_remove);
+        final Button remove = (Button) view.findViewById(R.id.soft_q_remove_f);
+        RelativeLayout noRemove = (RelativeLayout) view.findViewById(R.id.soft_q_no_remove_f);
 
         field.setText(fv.getField());
         value.setText(fv.getValue());
@@ -220,6 +255,7 @@ public class SoftQuestionListAdapter implements ListAdapter {
             @Override
             public void afterTextChanged(Editable s) {
                 fv.setValue(s.toString());
+                notifyDataListener();
             }
         });
 
@@ -228,18 +264,39 @@ public class SoftQuestionListAdapter implements ListAdapter {
 
     private void newFieldValueSelected(int position) {
         in.add(out.remove(position));
+        notifyDataListener();
     }
 
     private void removeFieldValue(int position) {
         out.add(in.remove(position));
+        notifyDataListener();
     }
 
-    public ArrayList<FieldValue>[] getFieldValues() {
-        //out.remove(0);90-
-        ArrayList<FieldValue>[] li = new ArrayList[2];
-        li[0] = in;
-        li[1] = out;
-        return li;
+    public ArrayList<FieldValue> getFieldValues() {
+        return allList();
+    }
+
+    private void notifyDataListener() {
+        if (dl != null) {
+            dl.setFieldValueData(allList());
+        }
+    }
+
+    private ArrayList<FieldValue> allList() {
+        ArrayList<FieldValue> all = new ArrayList<>();
+        for (FieldValue fv : in) {
+            if (!fv.getIn()) {
+                fv.setIn(true);
+            }
+            all.add(fv);
+        }
+        for (FieldValue fv : out) {
+            if (fv.getIn()) {
+                fv.setIn(false);
+            }
+            all.add(fv);
+        }
+        return all;
     }
 
     @Override
@@ -249,7 +306,7 @@ public class SoftQuestionListAdapter implements ListAdapter {
 
     @Override
     public int getItemViewType(int position) {
-        if(position >= in.size()) {
+        if (position >= in.size()) {
             return 1;
         } else {
             return 0;
@@ -260,4 +317,10 @@ public class SoftQuestionListAdapter implements ListAdapter {
     public boolean isEmpty() {
         return false;
     }
+
+    public interface DataListener {
+        void setFieldValueData(List<FieldValue> fvs);
+    }
 }
+
+

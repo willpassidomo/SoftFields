@@ -10,7 +10,7 @@ import java.util.ArrayList;
 
 
 public class MainActivity extends ActionBarActivity {
-    private ArrayList<FieldValue>[] fvs;
+    private ArrayList<FieldValue> fvs;
     private SoftQuestionListAdapter sqla;
     private ListView listView;
 
@@ -20,7 +20,7 @@ public class MainActivity extends ActionBarActivity {
         setContentView(R.layout.activity_main);
         listView = (ListView)findViewById(R.id.main_activity_list_view);
         fvs = TestData.getTestData();
-        sqla = new SoftQuestionListAdapter(this,fvs[0], fvs[1]);
+        sqla = new SoftQuestionListAdapter(this,fvs);
         listView.setAdapter(sqla);
     }
 
@@ -56,7 +56,7 @@ public class MainActivity extends ActionBarActivity {
     @Override
     public void onResume() {
         super.onResume();
-        sqla = new SoftQuestionListAdapter(this, fvs[0], fvs[1]);
+        sqla = new SoftQuestionListAdapter(this, fvs);
         listView.setAdapter(sqla);
     }
 }
