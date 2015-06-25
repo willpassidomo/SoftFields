@@ -16,6 +16,7 @@ import android.widget.ListAdapter;
 import android.widget.RelativeLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.ViewSwitcher;
 
 import java.util.ArrayList;
@@ -231,6 +232,9 @@ public class SoftQuestionListAdapter implements ListAdapter {
                     removeFieldValue(position);
                     vs.showNext();
                     view.invalidate();
+                    changed = true;
+                } else {
+                    Toast.makeText(context, "This Field is required and may not be removed", Toast.LENGTH_SHORT).show();
                 }
             }
         });

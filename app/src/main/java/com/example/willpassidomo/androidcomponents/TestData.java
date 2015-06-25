@@ -9,8 +9,8 @@ public class TestData {
 
     public static ArrayList<FieldValue> getTestData() {
         ArrayList<FieldValue> fields = new ArrayList<FieldValue>();
-        fields.add(new FieldValue("First Name",true,false));
-        fields.add(new FieldValue("Last Name",true,false));
+        fields.add(new FieldValue("First Name",true,true));
+        fields.add(new FieldValue("Last Name",true,true));
         fields.add(new FieldValue("Home Town",true,false));
         fields.add(new FieldValue("Favorite Thing",true,false));
         fields.add(new FieldValue("College",false,false));
