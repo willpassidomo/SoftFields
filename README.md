@@ -4,6 +4,7 @@ To use SoftFields, create a new instance of SoftQuestionsListAdapter, passing in
 ```java
 SoftQuestionsListAdapter sqla = new SoftQuestionsListAdapter(Context context, List<FieldValue> fvs, DataListener dl);
 ```
+then add the SoftQuestionsListAdapter to your activities existing ListView element
 
 ## FieldValue
 The FieldValue class describes a simple object which consists of a Field, a Value and boolean markers for "Required" and "In"
