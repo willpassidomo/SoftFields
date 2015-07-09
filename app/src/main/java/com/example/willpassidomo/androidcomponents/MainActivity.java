@@ -1,27 +1,35 @@
 package com.example.willpassidomo.androidcomponents;
 
+import android.app.Activity;
+import android.app.FragmentTransaction;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ListView;
 
 import java.util.ArrayList;
+import java.util.List;
 
 
-public class MainActivity extends ActionBarActivity {
-    private ArrayList<FieldValue> fvs;
-    private SoftQuestionListAdapter sqla;
-    private ListView listView;
+public class MainActivity extends Activity implements SoftQuestionListAdapter.DataListener {
+//    private ArrayList<FieldValue> fvs;
+//    private SoftQuestionListAdapter sqla;
+//    private ListView listView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        listView = (ListView)findViewById(R.id.main_activity_list_view);
-        fvs = TestData.getTestData();
-        sqla = new SoftQuestionListAdapter(this,fvs);
-        listView.setAdapter(sqla);
+//        listView = (ListView)findViewById(R.id.main_activity_list_view);
+//        fvs = TestData.getTestData();
+//        sqla = new SoftQuestionListAdapter(this,fvs);
+//        listView.setAdapter(sqla);
+
+        FragmentTransaction ft = getFragmentManager().beginTransaction();
+        ft.add(R.id.the_container, SoftQuestionsFragment.newInstance(this, getTestData()));
+        ft.commit();
     }
 
     @Override
@@ -46,17 +54,38 @@ public class MainActivity extends ActionBarActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    @Override
-    public void onPause() {
-        super.onPause();
+//    @Override
+//    public void onPause() {
+//        super.onPause();
+//
+//        fvs = sqla.getFieldValues();
+//    }
+//
+//    @Override
+//    public void onResume() {
+//        super.onResume();
+//        sqla = new SoftQuestionListAdapter(this, fvs);
+//        listView.setAdapter(sqla);
+//    }
 
-        fvs = sqla.getFieldValues();
+
+    public static ArrayList<FieldValue> getTestData() {
+        ArrayList<FieldValue> fields = new ArrayList<FieldValue>();
+        fields.add(new FieldValue("First Name",true,true));
+        fields.add(new FieldValue("Last Name",true,true));
+        fields.add(new FieldValue("Home Town",true,false));
+        fields.add(new FieldValue("Favorite Thing",true,false));
+        fields.add(new FieldValue("College",false,false));
+        fields.add(new FieldValue("Mothers Maiden name",false,false));
+        fields.add(new FieldValue("Best Friend", false, false));
+        fields.add(new FieldValue("Favorite Book",false,false));
+        fields.add(new FieldValue("Street Name", false, false));
+        return fields;
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
-        sqla = new SoftQuestionListAdapter(this, fvs);
-        listView.setAdapter(sqla);
+    public void setFieldValueData(List<FieldValue> fvs) {
+        Log.i("got data", "");
     }
+}
 }

@@ -323,7 +323,7 @@ public class SoftQuestionListAdapter implements ListAdapter {
     }
 
     public interface DataListener {
-        void setFieldValueData(List<FieldValue> fvs);
+        public void setFieldValueData(List<FieldValue> fvs);
     }
 }
 
